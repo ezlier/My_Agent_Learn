@@ -1,3 +1,4 @@
+import json
 import os
 
 import logging
@@ -63,6 +64,14 @@ def main():
         },
     ]
 
+    print("======================================")
+    print("        CLI AI 旅行助手")
+    print("======================================")
+    print("输入 /quit 退出")
+    print("输入 /clear 清空上下文")
+    print("输入 /save 保存聊天记录")
+    print("======================================")
+
     while True:
         try:
             user_message = input("请输入问题：").strip()
@@ -72,7 +81,28 @@ def main():
 
         if not user_message:
             logging.warning("用户问题不能为空。")
-            return
+            continue
+
+        if user_message == "/quit":
+            print("程序退出。")
+            break
+
+        elif user_message == "/clear":
+            messages = [
+                {
+                    "role": "system",
+                    "content": SYSTEM_MESSAGE,
+                },
+            ]
+            print("聊天上下文已清空。")
+            continue
+
+        elif user_message == "/save":
+            with open("messages.json", "w", encoding="utf-8") as f:
+                json.dump(messages, f, ensure_ascii=False, indent=4)
+
+            print("保存成功")
+            continue
 
         messages.append(
             {
@@ -88,9 +118,11 @@ def main():
 
         content = response.choices[0].message.content
 
+        logging.info("原始回答：" + content)
+
         lesson = check.parse_json(content)
 
-        logging.info("助手回答：" + lesson.answer)
+        print("助手回答：" + lesson.answer)
 
         messages.append(
             {
